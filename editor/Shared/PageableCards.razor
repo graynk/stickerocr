@@ -1,0 +1,93 @@
+@using editor.Data
+@using System.Security.Claims
+@using editor.Data.Services
+@inject StickerSetService _stickerSetService
+@inject AuthenticationStateProvider _authenticationStateProvider
+@inject NavigationManager _navigationManager;
+
+@if (Cardables == null)
+{
+    <div class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated"
+             role="progressbar"
+             style="width: 100%">
+        </div>
+    </div>
+}
+else
+{
+    <div class="container">
+        <CardableRows Cardables="@Cardables" Readonly="@true"/>
+        @if (PagesCount > 1)
+        {
+         <div class="row">
+            <div class="mx-auto">
+                <nav aria-label="Cards navigation">
+                    <ul class="pagination">
+                        @{
+                            var prevPage = Page-1;
+                            const int minBound = 1;
+                            var prevDisabled = Page <= minBound;
+                        }
+                        <li class="page-item @(prevDisabled ? "disabled" : "")">
+                            <a class="page-link" href="@RedirectUri/@(prevPage > minBound ? prevPage : minBound)" 
+                               aria-label="Previous" aria-disabled="@prevDisabled">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        @for (var pageNum = 1; pageNum <= PagesCount; pageNum++)
+                        {
+                            var isActive = pageNum == Page;
+                            if (isActive)
+                            {
+                                <li class="page-item active" aria-current="page">
+                                    <span class="page-link">@pageNum</span>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@RedirectUri/@(pageNum)">@pageNum</a>
+                                </li>
+                            }
+                        }
+                        @{
+                            var nextPage = Page+1;
+                            var maxBound = PagesCount;
+                            var nextDisabled = Page >= maxBound;
+                        }
+                        <li class="page-item @(nextDisabled ? "disabled" : "")">
+                            <a class="page-link" href="@RedirectUri/@(nextPage < maxBound ? nextPage : maxBound)" 
+                               aria-label="Next" aria-disabled="@nextDisabled">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>   
+        }
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public int Page { get; set; } = 1;
+
+    [Parameter]
+    public int ElementsPerPage { get; set; } = 9;
+
+    [Parameter]
+    public IEnumerable<ICardable>? Cardables { get; set; }
+
+    [Parameter]
+    public int TotalSetCount { get; set; } = 0;
+
+    [Parameter]
+    public string RedirectUri { get; set; } = "/";
+
+    [Parameter]
+    public int PagesCount { get; set; } = 0;
+
+}

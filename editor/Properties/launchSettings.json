@@ -1,0 +1,24 @@
+{
+  "profiles": {
+    "editor": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "watch": {
+      "commandName": "Executable",
+      "launchBrowser": true,
+      "launchUrl": "https://localhost:5001/",
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
+      "executablePath": "/usr/bin/dotnet",
+      "commandLineArgs": "watch run",
+      "workingDirectory": "../../../",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

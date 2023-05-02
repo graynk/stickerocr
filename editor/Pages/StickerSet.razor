@@ -1,0 +1,112 @@
+@page "/StickerSet/{SetName}"
+@using editor.Data
+@using System.Security.Claims
+@using editor.Data.Services
+@using Microsoft.Extensions.Configuration
+@inject StickerService _stickerService
+@inject UserEditsService _userEditsService
+@inject NavigationManager _navigationManager;
+@inject IJSRuntime _js;
+@inject IConfiguration _configuration
+@inject AuthenticationStateProvider _authenticationStateProvider
+
+@if (Model == null)
+{
+    <div class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated"
+             role="progressbar"
+             style="width: 100%">
+        </div>
+    </div>
+}
+else
+{
+    <div class="container">
+        <h1>@SetTitle</h1>
+        <AuthorizeView>
+            <Authorized Context="Auth">
+                <EditForm EditContext="_editContext" OnSubmit="@HandleSubmit">
+                    <CardableRows Cardables="@Model.Stickers" Readonly="@false"/>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg mt-2 mb-5 mb-sm-2">Submit</button>
+                    </div>
+                </EditForm>
+            </Authorized>
+            <NotAuthorized>
+                <CardableRows Cardables="@Model.Stickers" Readonly="@true"/>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public string? SetName { get; set; }
+
+    private string? SetTitle { get; set; }
+    private StickerModel? Model { get; set; }
+    private long? _userId;
+    private bool _isAdmin;
+
+    public class StickerModel
+    {
+        public IList<ICardable> Stickers { get; set; }
+
+        public StickerModel(IEnumerable<Sticker> stickers)
+        {
+            this.Stickers = new List<ICardable>(stickers);
+        }
+    }
+
+    private EditContext? _editContext;
+
+    private ISet<UserEdit> _changedFields = new HashSet<UserEdit>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+        var state = await _authenticationStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+        if (user.Identity is {IsAuthenticated: true })
+        {
+            _userId = Convert.ToInt64(user?.FindFirst(ClaimTypes.Sid)?.Value);
+            _isAdmin = _userId == _configuration.GetValue<int>("AdminId");
+        }
+        if (SetName != null)
+        {
+            var stickers = await _stickerService.GetStickersAsync(SetName, _userId);
+            this.SetTitle = await _stickerService.GetSetTitle(SetName);
+            this.Model = new StickerModel(stickers);
+            _editContext = new EditContext(this.Model);
+        }
+    // TODO: вынести
+        _editContext.OnFieldChanged += (sender, eventArgs) =>
+        {
+            if (!_userId.HasValue)
+            {
+                //TODO: на страницу с ошибкой?
+                _navigationManager.NavigateTo("/");
+                return;
+            }
+            var sticker = (Sticker) eventArgs.FieldIdentifier.Model;
+            var edit = new UserEdit(sticker.UniqueId, _userId.Value, sticker.Text);
+            if (!_changedFields.Add(edit))
+            {
+                _changedFields.Remove(edit);
+                _changedFields.Add(edit);
+            }
+        };
+        this.StateHasChanged();
+    }
+
+    private void HandleSubmit()
+    {
+        _userEditsService.UpdateStickers(this._changedFields, _isAdmin);
+        _js.InvokeVoidAsync("window.history.back");
+    }
+
+}

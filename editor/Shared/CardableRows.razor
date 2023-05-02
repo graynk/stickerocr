@@ -1,0 +1,27 @@
+@using editor.Data
+
+@for (var i = 0; i < Count; i += 3)
+{
+    <div class="card-group">
+        <MultiCardDeck Index="@i" Cardables="@Cardables.ToList()" TotalCardsCount="@Count" Readonly="@Readonly"/>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public IEnumerable<ICardable>? Cardables
+    {
+        get => _cardables;
+        set
+        {
+            _cardables = value;
+            Count = value?.ToList().Count ?? 0; // TODO: так не надо
+        }
+    }
+    
+    [Parameter]
+    public bool Readonly { get; set; }
+
+    private int Count { get; set; }
+    private IEnumerable<ICardable>? _cardables;
+}

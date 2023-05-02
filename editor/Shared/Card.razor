@@ -1,0 +1,82 @@
+@using editor.Data
+@inject NavigationManager _navigationManager
+
+@if (Cardable != null)
+{
+    <div class="card text-center rounded-sm @AdditionalStyle mx-auto">
+        @* TODO: сделать сраный max-height как-то на мобилках. короче не должны кнопки скакать из-за пикчи ебучей*@
+        <img class="card-img" alt="@Cardable.Text" src="data:image;base64,@Convert.ToBase64String(Cardable.Image)" @onclick="GoToLink" style="height: @(FixHeight ? "55vh" : "100%"); 
+        cursor: @(Cardable.Link != null ? "pointer" : "default")"/>
+        <div class="card-body">
+            @if (Readonly)
+            {
+                <p class="card-text">@Cardable.Text</p>
+            }
+        </div>
+        <div class="card-footer">
+            @if (!Readonly)
+            {
+                <InputText @bind-Value="@Cardable.Text" class="form-control"/>
+            }
+            else if (Buttons?.Count == 1)
+            {
+                var button = Buttons.First();
+                <IconButton Name="@button.Name" Icon="@button.Icon" Class="@button.Class" OnClick="@button.OnClick"/>
+            }
+            else if (Buttons != null)
+            {
+                <div class="btn-group w-100">
+                    @foreach (var button in Buttons)
+                    {
+                            @* TODO: can't I render just @button? check docs *@
+                        <IconButton Name="@button.Name" Icon="@button.Icon" Class="@button.Class" OnClick="@button.OnClick"/>
+                    }
+                </div>
+            }
+        </div>
+    </div>   
+}
+else
+{
+    <div class="card text-center rounded-sm @AdditionalStyle mx-auto">
+        @* <img class="card-img"/> *@
+        <div class="card-body">
+            <span class="placeholder col-7"></span>
+            <span class="placeholder col-4"></span>
+            <span class="placeholder col-4"></span>
+            <span class="placeholder col-6"></span>
+            <span class="placeholder col-8"></span>
+        </div>
+        <div class="card-footer">
+            <button tabindex="-1" class="btn btn-primary disabled placeholder col-6"></button>
+        </div>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public ICardable? Cardable { get; set; }
+
+    [Parameter]
+    public bool Readonly { get; set; } = false;
+
+    [Parameter]
+    public bool FixHeight { get; set; } = false;
+
+    [Parameter]
+    public string AdditionalStyle { get; set; } = "";
+
+    [Parameter]
+    public ICollection<IconButton>? Buttons { get; set; }
+
+    private void GoToLink()
+    {
+        if (Cardable?.Link == null)
+        {
+            return;
+        }
+        _navigationManager.NavigateTo(Cardable.Link);
+    }
+
+}

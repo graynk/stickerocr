@@ -1,0 +1,40 @@
+﻿<div class="top-row ps-4 navbar navbar-dark">
+    <a class="navbar-brand" href="">Sticker OCR</a>
+    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+            <ul class="nav flex-column">
+                <NavUserMenu/>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="UserEdits">
+                        <span class="oi oi-pencil" aria-hidden="true"></span> User edits
+                    </NavLink>
+                </li>
+            </ul>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+            <ul class="nav flex-column">
+                <NavUserMenu/>
+            </ul>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+}

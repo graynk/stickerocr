@@ -1,0 +1,47 @@
+﻿@using editor.Data
+@using System.Threading
+@using editor.Provider
+@inject AuthenticationStateProvider _authenticationStateProvider
+@inject NavigationManager _navigationManager
+
+<AuthorizeView>
+    <Authorized>
+        <img id="avatar" alt="avatar" width="40" class="rounded-circle" src="@context.User.FindFirst("Avatar").Value">
+        <label for="avatar" class="mb-0 ms-2">@context.User?.Identity?.Name</label>
+        <button @onclick="LogOut" class="nav-link btn btn-link ms-0">Log out</button>
+    </Authorized>
+    <NotAuthorized>
+        <button @onclick="LogIn" class="nav-link btn btn-link">Fake login</button>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private async void LogIn(EventArgs eventArgs)
+    {
+        var user = new User
+        {
+            Id = 1234567,
+            FirstName = "Test",
+            Username = "test",
+            PhotoUrl = "https://t.me/i/userpic/320/fBwVfUXNUT8Tjy0KBX5ALPVsKa8UZSHCcLF9JHWICFM.jpg",
+            AuthDate = 1621772420,
+            Hash = "test"
+        };
+        await ((CustomAuthenticationStateProvider)_authenticationStateProvider).AuthenticateUser(user);
+        if (_navigationManager.ToBaseRelativePath(_navigationManager.Uri) == "")
+        {
+            return;
+        }
+        _navigationManager.NavigateTo(_navigationManager.Uri, true);
+    }
+
+    private void LogOut(EventArgs eventArgs)
+    {
+        ((CustomAuthenticationStateProvider)_authenticationStateProvider).Logout();
+        if (_navigationManager.ToBaseRelativePath(_navigationManager.Uri) == "")
+        {
+            return;
+        }
+        _navigationManager.NavigateTo(_navigationManager.Uri, true);
+    }
+}

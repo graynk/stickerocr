@@ -1,0 +1,74 @@
+@page "/StickerSets"
+@page "/StickerSets/{Page:int}"
+@using editor.Data
+@using System.Security.Claims
+@using editor.Data.Services
+@inject StickerSetService _stickerSetService
+@inject AuthenticationStateProvider _authenticationStateProvider
+@inject NavigationManager _navigationManager;
+
+
+<h1>Here are all of the sticker sets@(Username != null ? $" for {Username}" : "")</h1>
+
+<PageableCards 
+    Page="@Page" 
+    TotalSetCount="@TotalSetCount" 
+    RedirectUri="/StickerSets" 
+    Cardables="@_stickerSets"
+    ElementsPerPage="@ELEMENTS_PER_PAGE"
+    PagesCount="@PagesCount"
+/>
+
+@code {
+    [Parameter]
+    public int Page { get; set; } = 1;
+    private const int ELEMENTS_PER_PAGE = 9;
+    private string? Username { get; set; }
+    private IEnumerable<ICardable>? _stickerSets;
+    private int TotalSetCount { get; set; }
+    private int PagesCount { get; set; }
+    private long? UserId { get; set; }
+
+    private bool _dirty = true;
+    
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+        if (Page == 0)
+        {
+            Page = 1;
+        }
+        _dirty = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var state = await _authenticationStateProvider.GetAuthenticationStateAsync();
+            var user = state.User;
+            if (user.Identity.IsAuthenticated)
+            {
+                Username = user.Identity.Name;
+                UserId = Convert.ToInt64(user.FindFirst(ClaimTypes.Sid).Value);
+            }
+            _dirty = true;
+        }
+        if (!_dirty)
+        {
+            return;
+        }
+        
+        TotalSetCount = await _stickerSetService.CountStickerSetsAsync(UserId);
+        PagesCount = (int) Math.Ceiling((float)TotalSetCount / ELEMENTS_PER_PAGE);
+        if (Page > PagesCount || Page < 1)
+        {
+            _navigationManager.NavigateTo("/StickerSets");
+            return;
+        }
+        var offset = (Page - 1) * ELEMENTS_PER_PAGE;
+        _stickerSets = await _stickerSetService.GetStickersSetsAsync(UserId, offset, ELEMENTS_PER_PAGE);
+        _dirty = false;
+        this.StateHasChanged();
+    }
+}

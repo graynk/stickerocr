@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+
+  db:
+    image: postgres:15-bullseye
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=bot
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_DB=stickerocr
+    ports:
+      - "5432:5432"
+    volumes:
+    - ./data:/var/lib/postgresql/data:rw
+    - ./postgres.conf:/etc/postgresql/postgresql.conf:roz
+
+  app:
+    build:
+      context: ./bot
+    depends_on:
+      - db
+    restart: unless-stopped
+    environment:
+      - STICKER_OCR_DB_URL=db
+      - STICKER_OCR_DB_PASSWORD=mysecretpassword
+      - STICKER_OCR_BOT_TOKEN=BOT_TOKEN
+    volumes:
+      - ./bot/model:/root/.EasyOCR/model
+
+  editor:
+    build:
+      context: ./editor
+    depends_on:
+      - db
+    restart: unless-stopped
+    ports:
+      - "8085:80"

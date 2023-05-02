@@ -1,0 +1,41 @@
+@using editor.Data
+
+@for (var i = 0; i < ColumnCount; i++)
+{
+    @if (Index + i < TotalCardsCount)
+    {
+        var cardable = Cardables[Index + i];
+        // TODO: placeholder
+        var button = new IconButton
+        {
+            Name = "Add to my stickers",
+            Class = "btn-primary",
+            Icon = "oi-bookmark",
+            OnClick = () => { Console.WriteLine("aboba"); }
+        };
+        <Card Cardable="@cardable" Readonly="@Readonly" Buttons="new List<IconButton> { button }"/>
+    }
+    else
+    {
+        <Card/>
+    }
+}
+
+@code {
+
+    [Parameter]
+    public int Index { get; set; }
+
+    [Parameter]
+    public IList<ICardable> Cardables { get; set; }
+
+    [Parameter]
+    public int TotalCardsCount { get; set; }
+
+    [Parameter]
+    public bool Readonly { get; set; }
+
+    [Parameter]
+    public int ColumnCount { get; set; } = 3;
+
+}

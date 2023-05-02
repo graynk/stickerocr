@@ -1,0 +1,129 @@
+@page "/UserEdits"
+@using editor.Data.Services
+@using Microsoft.Extensions.Configuration
+@using System.Security.Claims
+@using editor.Data
+@inject UserEditsService _userEditsService
+@inject AuthenticationStateProvider _authenticationStateProvider
+@inject IConfiguration _configuration
+@inject NavigationManager _navigationManager
+
+<AuthorizeView>
+    <Authorized>
+        @{
+            var isAdmin = UserId == _configuration.GetValue<int>("AdminId");
+        }
+        @if (!_loaded)
+        {
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated w-100"
+                     role="progressbar">
+                </div>
+            </div>
+        }
+        else if (!isAdmin)
+        {
+            <p>а че это вы здесь делаете</p>
+        }
+        else if (_currentUserEdit == null)
+        {
+            <p>На сегодня всё!</p>
+        }
+        else
+        {
+            <div class="row">
+                @{
+                    var buttons = new List<IconButton>
+                    {
+                        new()
+                        {
+                            Name = "Accept",
+                            Class = "btn-success",
+                            Icon = "oi-check",
+                            OnClick=() => CommitActionAsync(Action.Accept)
+                        },
+                        new()
+                        {
+                            Name = "Reject",
+                            Class = "btn-warning",
+                            Icon = "oi-x",
+                            OnClick=() => CommitActionAsync(Action.Reject)
+                        },
+                        new()
+                        {
+                            Name = "Ban",
+                            Class = "btn-danger",
+                            Icon = "oi-ban",
+                            OnClick=() => CommitActionAsync(Action.Ban)
+                        }
+                    };
+                }
+                <Card Cardable="_currentUserEdit" Readonly="true" Buttons="buttons" AdditionalStyle="col-sm-7 col-lg-7 px-0" FixHeight="@true"/>
+            </div>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <p>а че это вы здесь делаете</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string? Username { get; set; }
+    private UserEditDisplay? _currentUserEdit;
+    private long? UserId { get; set; }
+    private bool _loaded = false;
+
+    private enum Action
+    {
+        Accept,
+        Reject,
+        Ban,
+    }
+
+    private async void CommitActionAsync(Action action)
+    {
+        switch (action)
+        {
+            case Action.Accept:
+                _userEditsService.AcceptUserEdit(_currentUserEdit!);
+                break;
+            case Action.Reject:
+                _userEditsService.RejectUserEdit(_currentUserEdit!);
+                break;
+            case Action.Ban:
+                _userEditsService.BanUserEdit(_currentUserEdit!);
+                break;
+        }
+        
+        _currentUserEdit = await _userEditsService.GetNextUserEdit();
+        this.StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var state = await _authenticationStateProvider.GetAuthenticationStateAsync();
+            var user = state.User;
+            if (user.Identity is {IsAuthenticated: true })
+            {
+                Username = user.Identity.Name;
+                UserId = Convert.ToInt64(user.FindFirst(ClaimTypes.Sid)?.Value);
+            }
+        }
+        if (UserId != _configuration.GetValue<int>("AdminId"))
+        {
+            _loaded = true;
+            return;
+        }
+
+        if (!firstRender)
+        {
+            return;
+        }
+
+        _currentUserEdit = await _userEditsService.GetNextUserEdit();
+        _loaded = true;
+        this.StateHasChanged();
+    }
+}
