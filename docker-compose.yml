@@ -15,7 +15,7 @@ services:
     - ./data:/var/lib/postgresql/data:rw
     - ./postgres.conf:/etc/postgresql/postgresql.conf:roz
 
-  app:
+  bot:
     build:
       context: ./bot
     depends_on:
