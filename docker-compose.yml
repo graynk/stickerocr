@@ -18,6 +18,7 @@ services:
   bot:
     build:
       context: ./bot
+    image: ghcr.io/graynk/sticker_ocr_bot:latest
     depends_on:
       - db
     restart: unless-stopped
@@ -31,6 +32,7 @@ services:
   editor:
     build:
       context: ./editor
+    image: ghcr.io/graynk/sticker_ocr_editor:latest
     depends_on:
       - db
       - bot
