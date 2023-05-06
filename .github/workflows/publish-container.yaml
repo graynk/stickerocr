@@ -24,7 +24,7 @@ jobs:
             name: Build and push bot
             uses: docker/build-push-action@v4
             with:
-                context: ./bot
+                context: bot
                 pull: true
                 push: true
                 tags: ghcr.io/graynk/sticker_ocr_bot:latest
@@ -33,7 +33,7 @@ jobs:
             name: Build and push editor
             uses: docker/build-push-action@v4
             with:
-                context: ./editor
+                context: editor
                 pull: true
                 push: true
                 tags: ghcr.io/graynk/sticker_ocr_editor:latest
