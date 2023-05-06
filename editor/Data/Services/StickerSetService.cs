@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace editor.Data.Services
 
         public Task<IEnumerable<StickerSet>> GetStickersSetsAsync(long? id, int offset, int elementsPerPage)
         {
-            if (!id.HasValue)
+            if (!id.HasValue || id == int.Parse(Environment.GetEnvironmentVariable("ADMIN_ID")))
             {
                 return _db.QueryAsync<StickerSet>(@"
                         SELECT * 
@@ -46,7 +47,7 @@ namespace editor.Data.Services
 
         public Task<int> CountStickerSetsAsync(long? id)
         {
-            if (!id.HasValue)
+            if (!id.HasValue || id == int.Parse(Environment.GetEnvironmentVariable("ADMIN_ID")))
             {
                 return _db.QueryFirstAsync<int>("SELECT COUNT(*) FROM sticker_sets");
             }
