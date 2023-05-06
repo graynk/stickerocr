@@ -3,7 +3,7 @@ on:
     release:
         types: [published]
 jobs:
-    push_to_registry:
+    docker:
         name: Push Docker image to GitHub Packages
         runs-on: ubuntu-latest
         steps:
@@ -29,7 +29,7 @@ jobs:
                 push: true
                 tags: ghcr.io/graynk/sticker_ocr_bot:latest
                 platforms: linux/amd64
-         -
+          -
             name: Build and push editor
             uses: docker/build-push-action@v4
             with:
