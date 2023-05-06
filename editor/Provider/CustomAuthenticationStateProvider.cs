@@ -29,7 +29,7 @@ namespace editor.Provider
       _logger = loggerFactory.CreateLogger<CustomAuthenticationStateProvider>();
       _sessionStorage = sessionStorage;
       var sha256 = new SHA256Managed();
-      var botToken = configuration.GetValue<string>("BotToken");
+      var botToken = Environment.GetEnvironmentVariable("BOT_TOKEN");
       var computedHash = sha256.ComputeHash(Encoding.UTF8.GetBytes(botToken));
       _hmac = new HMACSHA256(computedHash);
     }

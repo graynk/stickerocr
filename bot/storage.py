@@ -7,8 +7,8 @@ from psycopg2.extensions import cursor
 
 
 class Storage:
-    conn = psycopg2.connect('host=%s dbname=stickerocr user=bot password=%s' % (os.environ['STICKER_OCR_DB_URL'],
-                                                                                os.environ['STICKER_OCR_DB_PASSWORD']))
+    conn = psycopg2.connect('host=%s dbname=stickerocr user=bot password=%s' % (os.environ['DB_URL'],
+                                                                                os.environ['DB_PASSWORD']))
 
     def create_schema(self):
         with self.conn:

@@ -90,7 +90,7 @@ async def error_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 
 if __name__ == '__main__':
-    bot_token = os.environ['STICKER_OCR_BOT_TOKEN']
+    bot_token = os.environ['BOT_TOKEN']
     storage.create_schema()
     application = Application.builder()\
         .token(bot_token)\

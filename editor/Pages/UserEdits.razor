@@ -11,7 +11,7 @@
 <AuthorizeView>
     <Authorized>
         @{
-            var isAdmin = UserId == _configuration.GetValue<int>("AdminId");
+            var isAdmin = UserId == int.Parse(Environment.GetEnvironmentVariable("ADMIN_ID"));;
         }
         @if (!_loaded)
         {
@@ -111,7 +111,7 @@
                 UserId = Convert.ToInt64(user.FindFirst(ClaimTypes.Sid)?.Value);
             }
         }
-        if (UserId != _configuration.GetValue<int>("AdminId"))
+        if (UserId != int.Parse(Environment.GetEnvironmentVariable("ADMIN_ID")))
         {
             _loaded = true;
             return;

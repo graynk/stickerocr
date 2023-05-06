@@ -74,7 +74,7 @@ else
         if (user.Identity is {IsAuthenticated: true })
         {
             _userId = Convert.ToInt64(user?.FindFirst(ClaimTypes.Sid)?.Value);
-            _isAdmin = _userId == _configuration.GetValue<int>("AdminId");
+            _isAdmin = _userId == int.Parse(Environment.GetEnvironmentVariable("ADMIN_ID"));
         }
         if (SetName != null)
         {

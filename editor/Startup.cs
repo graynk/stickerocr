@@ -1,3 +1,4 @@
+using System;
 using System.Data;
 using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Builder;
@@ -36,6 +37,9 @@ namespace editor
         .AddDefaultTokenProviders();
       services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
       var connectionString = Configuration.GetConnectionString("DefaultConnection");
+      connectionString = string.Format(connectionString,
+        Environment.GetEnvironmentVariable("DB_URL"),
+        Environment.GetEnvironmentVariable("DB_PASSWORD"));
       services.AddTransient<IDbConnection>((sp) => new NpgsqlConnection(connectionString));
       services.AddTransient<IUserStore<User>, CustomUserStore>();
       services.AddTransient<IRoleStore<Role>, CustomRoleStore>();

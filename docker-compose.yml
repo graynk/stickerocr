@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRES_USER=bot
-      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=stickerocr
     ports:
       - "5432:5432"
@@ -22,9 +22,9 @@ services:
       - db
     restart: unless-stopped
     environment:
-      - STICKER_OCR_DB_URL=db
-      - STICKER_OCR_DB_PASSWORD=mysecretpassword
-      - STICKER_OCR_BOT_TOKEN=BOT_TOKEN
+      - DB_URL=db
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - BOT_TOKEN=${BOT_TOKEN}
     volumes:
       - ./bot/model:/root/.EasyOCR/model
 
@@ -33,6 +33,12 @@ services:
       context: ./editor
     depends_on:
       - db
+      - bot
     restart: unless-stopped
+    environment:
+      - DB_URL=db
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - BOT_TOKEN=${BOT_TOKEN}
+      - ADMIN_ID=${ADMIN_ID}
     ports:
       - "8085:80"
