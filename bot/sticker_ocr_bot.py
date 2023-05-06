@@ -16,7 +16,7 @@ from telegram.ext import AIORateLimiter
 from telegram.ext import Defaults
 from storage import Storage
 
-reader = easyocr.Reader(['ru', 'en'], gpu=False)
+reader = easyocr.Reader(['ru', 'en'])
 storage = Storage()
 
 
