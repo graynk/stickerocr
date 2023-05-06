@@ -31,7 +31,7 @@ async def find_sticker(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     user = update.inline_query.from_user
     query = update.inline_query.query
     print(user.first_name)
-    print(query)
+    print(query, flush=True)
     results = []
     stickers = storage.find_stickers(query, user.id, constants.InlineQueryLimit.RESULTS)
 
@@ -86,8 +86,7 @@ def extract_and_save_text(sticker: bytes) -> str:
 
 
 async def error_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    print(context.error)
-
+    print(context.error, flush=True)
 
 if __name__ == '__main__':
     bot_token = os.environ['BOT_TOKEN']

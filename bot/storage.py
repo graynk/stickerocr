@@ -5,6 +5,33 @@ from typing import List, Tuple
 import psycopg2
 from psycopg2.extensions import cursor
 
+TS_QUERY = "and text_index @@ (to_tsquery('russian', %(query)s || ':*') || to_tsquery('english', %(query)s || ':*'))"
+WEB_QUERY = "and text_index @@ (websearch_to_tsquery('russian', %(query)s || ':*') || websearch_to_tsquery('english', %(query)s || ':*'))"
+BASE_QUERY = '''
+    select id, unique_id from (
+        select id, unique_id, set_name, row_number() over (partition by set_name) as row 
+        from stickers
+        where (
+            (
+                (select use_public from USERS where user_id = %(user_id)s) = true
+                and not exists (
+                    select 1
+                    from unprocessed_stickers
+                    where unprocessed_stickers.unique_id = stickers.unique_id
+                )
+            )
+            or set_name in (select set_name from favorites where user_id = %(user_id)s)
+        ) and not exists (
+            select 1 
+            from banned_stickers where banned_stickers.unique_id = stickers.unique_id
+        ) 
+        {}
+    )
+    as stckrs 
+    where row < 4 
+    limit %(limit)s
+'''
+
 
 class Storage:
     conn = psycopg2.connect('host=%s dbname=stickerocr user=bot password=%s' % (os.environ['DB_URL'],
@@ -134,89 +161,16 @@ def fetch_set_ids(cur: cursor, set_name: str) -> List[Tuple[str]]:
 
 
 def fetch_default_response(cur: cursor, user_id: int, limit: int) -> None:
-    cur.execute('''
-    select id, unique_id
-    from (
-        select id, unique_id, set_name, row_number() over (partition by set_name) as row
-        from stickers
-        where (
-            (
-                (select use_public from USERS where user_id = %(user_id)s) = true
-                and not exists (
-                    select 1
-                    from unprocessed_stickers
-                    where unprocessed_stickers.unique_id = stickers.unique_id
-                )
-            )
-            or
-            set_name in (select set_name from favorites where user_id = %(user_id)s)
-        ) and not exists (
-            select 1
-            from banned_stickers
-            where banned_stickers.unique_id = stickers.unique_id
-        )
-    )
-    as stckrs
-    where row < 4
-    limit %(limit)s
-    ''', {'user_id': user_id, 'limit': limit})
+    cur.execute(BASE_QUERY.format(''), {'user_id': user_id, 'limit': limit})
 
 
 def search_via_tsquery(cur: cursor, query: str, user_id: int, limit: int) -> None:
     query = query.replace(' ', '<->')
-    cur.execute('''
-    select id, unique_id from (
-        select id, unique_id, set_name, row_number() over (partition by set_name) as row 
-        from stickers
-        where (
-            (
-                (select use_public from USERS where user_id = %(user_id)s) = true
-                and not exists (
-                    select 1
-                    from unprocessed_stickers
-                    where unprocessed_stickers.unique_id = stickers.unique_id
-                )
-            )
-            or 
-            set_name in (select set_name from favorites where user_id = %(user_id)s)
-        ) and not exists (
-            select 1 
-            from banned_stickers where banned_stickers.unique_id = stickers.unique_id
-        ) 
-        and text_index @@ (to_tsquery('russian', %(query)s || ':*') || to_tsquery('english', %(query)s || ':*'))
-    )
-    as stckrs 
-    where row < 4 
-    limit %(limit)s
-    ''', {'user_id': user_id, 'query': query, 'limit': limit})
+    cur.execute(BASE_QUERY.format(TS_QUERY), {'user_id': user_id, 'query': query, 'limit': limit})
 
 
 def search_via_websearch(cur: cursor, query: str, user_id: int, limit: int) -> None:
-    cur.execute('''
-    select id, unique_id from (
-        select id, unique_id, set_name, row_number() over (partition by set_name) as row 
-        from stickers
-        where (
-            (
-                (select use_public from USERS where user_id = %(user_id)s) = true
-                and not exists (
-                    select 1
-                    from unprocessed_stickers
-                    where unprocessed_stickers.unique_id = stickers.unique_id
-                )
-            ) 
-            or 
-            set_name in (select set_name from favorites where user_id = %(user_id)s)
-        ) and not exists (
-            select 1 
-            from banned_stickers where banned_stickers.unique_id = stickers.unique_id
-        ) 
-        and text_index @@ (websearch_to_tsquery('russian', %(query)s || ':*') || websearch_to_tsquery('english', %(query)s || ':*'))
-    )
-    as stckrs 
-    where row < 4 
-    limit %(limit)s
-    ''', {'user_id': user_id, 'query': query, 'limit': limit})
+    cur.execute(BASE_QUERY.format(WEB_QUERY), {'user_id': user_id, 'query': query, 'limit': limit})
 
 
 def check_word(word: str) -> bool:
