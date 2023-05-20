@@ -12,7 +12,6 @@ from telegram.ext import CommandHandler
 from telegram.ext import filters
 from telegram.ext import InlineQueryHandler
 from telegram.ext import MessageHandler
-from telegram.ext import AIORateLimiter
 from telegram.ext import Defaults
 from storage import Storage
 
@@ -93,7 +92,6 @@ if __name__ == '__main__':
     storage.create_schema()
     application = Application.builder()\
         .token(bot_token)\
-        .rate_limiter(AIORateLimiter())\
         .defaults(Defaults(block=False))\
         .build()
     application.add_handler(CommandHandler(str('start'), start))
