@@ -26,8 +26,10 @@ services:
       - DB_URL=db
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - BOT_TOKEN=${BOT_TOKEN}
+      - NVIDIA_VISIBLE_DEVICES=all
     volumes:
       - ./bot/model:/root/.EasyOCR/model
+    runtime: nvidia
 
   editor:
     build:
