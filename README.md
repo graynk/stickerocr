@@ -4,8 +4,7 @@ The bot uses [EasyOCR](https://github.com/JaidedAI/EasyOCR) to recognize text on
 then lets you search for them.
 OCR is set to detect Russian and English languages only - others might work too, though not likely.
 
-Bot itself _would be_ available at [@sticker_ocr_bot](https://t.me/sticker_ocr_bot), but my home server is missing 
-AVX2, which is required for pytorch, and by extension - EasyOCR, so... 
+Bot is available at [@sticker_ocr_bot](https://t.me/sticker_ocr_bot)
 
 The editor is not yet available and won't be for some time
 
