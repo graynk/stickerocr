@@ -5,6 +5,8 @@ from typing import List, Tuple
 import psycopg2
 from psycopg2.extensions import cursor
 
+from sticker import PreparedSticker
+
 TS_QUERY = "and text_index @@ (to_tsquery('russian', %(query)s || ':*') || to_tsquery('english', %(query)s || ':*'))"
 WEB_QUERY = "and text_index @@ (websearch_to_tsquery('russian', %(query)s || ':*') || websearch_to_tsquery('english', %(query)s || ':*'))"
 BASE_QUERY = '''
@@ -107,8 +109,7 @@ class Storage:
                 upsert_favorites(cur, user_id, set_name)
                 return fetch_set_ids(cur, set_name)
 
-    def save_sticker(self, sticker_id: str, sticker_unique_id: str, order: int, set_name: str, text: str,
-                     body: bytes) -> None:
+    def save_sticker(self, sticker: PreparedSticker) -> None:
         with self.conn:
             with self.conn.cursor() as cur:
                 cur.execute('''
@@ -118,19 +119,19 @@ class Storage:
                         do update set id = %(id)s, text = %(text)s, image = %(sticker)s;
                         ''',
                             {
-                                'id': sticker_id,
-                                'unique_id': sticker_unique_id,
-                                'order': order,
-                                'set': set_name,
-                                'text': text,
-                                'sticker': body
+                                'id': sticker.file_id,
+                                'unique_id': sticker.file_unique_id,
+                                'order': sticker.index,
+                                'set': sticker.set_name,
+                                'text': sticker.text,
+                                'sticker': sticker.sticker_bytes
                             })
                 cur.execute('''
                 insert into unprocessed_stickers (unique_id)
                 values (%s)
                 on conflict (unique_id) 
                 do nothing;
-                ''', (sticker_unique_id,))
+                ''', (sticker.file_unique_id,))
 
     def delete_stickers(self, ids: List[str]):
         with self.conn:
