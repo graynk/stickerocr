@@ -7,5 +7,6 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 COPY sticker_ocr_bot.py ./
 COPY storage.py ./
+COPY sticker.py ./
 
 CMD [ "python", "./sticker_ocr_bot.py" ]
