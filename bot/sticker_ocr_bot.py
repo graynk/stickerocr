@@ -79,7 +79,7 @@ async def analyze_pack(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     for index, sticker in enumerate(stickers_to_recognize):
         sticker_file = await sticker.get_file()
-        sticker_bytes = await sticker_file.download_as_bytearray(pool_timeout=60)
+        sticker_bytes = await sticker_file.download_as_bytearray(pool_timeout=120)
         prepared_stickers.append(PreparedSticker(file_id=sticker.file_id,
                                                  file_unique_id=sticker.file_unique_id,
                                                  index=sticker_set.stickers.index(sticker),
@@ -125,8 +125,9 @@ if __name__ == '__main__':
     application = Application.builder() \
         .token(bot_token) \
         .defaults(Defaults(block=False)) \
-        .read_timeout(30) \
-        .write_timeout(30) \
+        .read_timeout(60) \
+        .write_timeout(60) \
+        .connection_pool_size(512) \
         .build()
     application.add_handler(CommandHandler(str('start'), start))
     application.add_handler(InlineQueryHandler(find_sticker))
