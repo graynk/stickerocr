@@ -44,5 +44,6 @@ services:
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - BOT_TOKEN=${BOT_TOKEN}
       - ADMIN_ID=${ADMIN_ID}
+      - USER_HASH=7ed0e3fc7bf3fe79d35109ec42cfe90872a16eccb65b41069ec60a7af3ab9148
     ports:
       - "8085:80"

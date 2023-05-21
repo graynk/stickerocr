@@ -18,14 +18,15 @@
 @code {
     private async void LogIn(EventArgs eventArgs)
     {
+        // this is all just for testing locally
         var user = new User
         {
-            Id = 1234567,
+            Id = int.Parse(Environment.GetEnvironmentVariable("ADMIN_ID")),
             FirstName = "Test",
             Username = "test",
             PhotoUrl = "https://graynk.space/zulin.png",
             AuthDate = 1621772420,
-            Hash = "7ed0e3fc7bf3fe79d35109ec42cfe90872a16eccb65b41069ec60a7af3ab9148"
+            Hash = Environment.GetEnvironmentVariable("USER_HASH")
         };
         await ((CustomAuthenticationStateProvider)_authenticationStateProvider).AuthenticateUser(user);
         if (_navigationManager.ToBaseRelativePath(_navigationManager.Uri) == "")
